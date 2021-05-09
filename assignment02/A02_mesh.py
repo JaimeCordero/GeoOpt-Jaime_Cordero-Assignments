@@ -10,6 +10,7 @@
         """
         
 import Rhino.Geometry as rg
+import ghpythonlib.treehelpers as th
 
 #----------------- 1. Compute Face Normals -----------------#
 
@@ -75,19 +76,31 @@ Bonus tasks:
 - Propose a different mesh to analyse
 - Provide a frame for the resulting mesh by moving edges according to the rg.Mesh.VertexNormals"""
 
-srpt = []
-for i in range(len(meshList)):
-    v = []
-    v1 =  meshList[i].Vertices
-    v.append(v1[0])
-    v.append(v1[3])
+#Rotating panels according to angle between sun and normals
 
-##moving diagonal points based on vector angle difference
-    mvdpoints = []
-    for pt in v:
-        vec = rg.Vector3d(pt)
-        mag = anglesList[i]*-0.8
-        zvec = rg.Vector3d(0,0,mag)
-        mvdp = rg.Point3d(vec - zvec)
-        mvdpoints.append(mvdp)
-    srpt.append(mvdpoints)
+for i in range(len(meshList)):
+    vertices = meshList[i].Vertices
+    #print(type(edges[0]))
+    vA = rg.Vector3d(vertices[0])
+    vB = rg.Vector3d(vertices[1])
+    rotAxis = rg.Vector3d(vB-vA)
+    transMesh = meshList[i].Rotate(anglesList[i], rotAxis, vertices[0])
+
+#Frame in the edge
+
+"""for i in range(len(meshList)):
+    vertices = meshList[i].Vertices
+    points = vertices.ToPoint3dArray
+    curve = rg.Curve.CreateInterpolatedCurve(points[0], 1)"""
+
+edg = []
+for i in range(len(meshList)):
+    edges = meshList[i].GetNakedEdges()
+    listEdge = []
+    for j in range(len(edges)):
+        edge = edges[j]
+        listEdge.append(edge.ToNurbsCurve())
+    curve = rg.Curve.JoinCurves(listEdge)[0]
+    edg.append(curve)
+
+e = th.list_to_tree(edg)
