@@ -1,7 +1,7 @@
 """Provides a scripting component.
     Inputs:
-        mesh: a mesh
-        sun: sun vector
+        m: a mesh
+        s: sun vector
     Output:
         a: List of Vectors - normals
         b: List of Points - 
@@ -17,8 +17,8 @@ import ghpythonlib.treehelpers as th
 """compute face normals using rg.Mesh.FaceNormals.ComputeFaceNormals()
 Output the vectors to a"""
 
-mesh.FaceNormals.ComputeFaceNormals
-a = mesh.FaceNormals
+m.FaceNormals.ComputeFaceNormals
+a = m.FaceNormals
 
 #----------------- 2. Get Face centers -----------------#
 
@@ -28,8 +28,8 @@ Output that list to b"""
 
 centers = []
 
-for i in range(mesh.Faces.Count):
-    cntr = mesh.Faces.GetFaceCenter(i)
+for i in range(m.Faces.Count):
+    cntr = m.Faces.GetFaceCenter(i)
     centers.append(cntr)
 
 b = centers
@@ -40,8 +40,8 @@ b = centers
 Store the angles in a list called angleList and output it to c"""
 
 anglesList = []
-for i in range(mesh.Faces.Count):
-    angles = rg.Vector3d.VectorAngle(sun, a[i])
+for i in range(m.Faces.Count):
+    angles = rg.Vector3d.VectorAngle(s, a[i])
     anglesList.append(angles)
 
 c = anglesList
@@ -53,13 +53,13 @@ For this, you have to first copy the mesh using rg.Mesh.Duplicate()
 Then iterate through each face of the copy, extract it using rg.Mesh.ExtractFaces
 And store the result into a list called exploded in output d"""
 
-mesh2 = rg.Mesh.Duplicate(mesh)
-print(mesh)
+mesh2 = rg.Mesh.Duplicate(m)
+print(m)
 print(mesh2)
 
 meshList = []
 
-for i in range(mesh.Faces.Count):
+for i in range(m.Faces.Count):
     meshes = mesh2.Faces.ExtractFaces([0])
     meshList.append(meshes)
     
@@ -94,6 +94,9 @@ for i in range(len(meshList)):
     curve = rg.Curve.CreateInterpolatedCurve(points[0], 1)"""
 
 edg = []
+movedEdg = []
+extrusion
+
 for i in range(len(meshList)):
     edges = meshList[i].GetNakedEdges()
     listEdge = []
@@ -101,6 +104,19 @@ for i in range(len(meshList)):
         edge = edges[j]
         listEdge.append(edge.ToNurbsCurve())
     curve = rg.Curve.JoinCurves(listEdge)[0]
-    edg.append(curve)
+    curve2 = curve.Duplicate()
+    edg.append(curve2)
+    vector = rg.Vector3d.Multiply(-a[i], 0.1)
+    curve.Translate(vector)
+    movedEdg.append(curve)
+    ext = rg.Brep.CreateFromTaperedExtrude(curve2, 0.1, -a[i], b[i], 0, 0)
+    extrusion.append(ext)
+    #loft = rg.Brep.CreateFromLoft(curve, curve2, rg.Point3d.Unset, rg.Point3d.Unset, rg.LoftType.Normal, False)
 
+print(type(movedEdg[0]))
 e = th.list_to_tree(edg)
+f = th.list_to_tree(movedEdg)
+#I'm getting 2000 items
+#getting Goo instead of Brep in here, tried [0] when creating the extrusion but didn't work
+g = extrusion
+
