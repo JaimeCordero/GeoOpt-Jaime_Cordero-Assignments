@@ -95,7 +95,7 @@ for i in range(len(meshList)):
 
 edg = []
 movedEdg = []
-extrusion
+extrusion = []
 
 for i in range(len(meshList)):
     edges = meshList[i].GetNakedEdges()
